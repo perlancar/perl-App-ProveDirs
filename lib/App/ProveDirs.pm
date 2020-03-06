@@ -68,7 +68,10 @@ our %args_common = (
         'x.name.is_plural' => 1,
         'x.name.singular' => 'prove_opt',
         schema => ['array*', of=>'str*'],
-        default => ['-l'],
+    },
+    summarize_all => {
+        schema => 'bool*',
+        summary => 'If true, also summarize successes in addition to failures',
     },
 );
 
@@ -128,6 +131,7 @@ _
             schema => ['array*', of=>'dirname*'],
             pos => 0,
             req => 1,
+            slurpy => 1,
         },
         # XXX add arg: dzil test instead of prove
     },
@@ -141,13 +145,16 @@ _
 sub prove_dirs {
     my %args = @_;
 
-    my @fails;
+    my @summaries;
+    my $num_fails;
     my $i = 0;
 
     my (%dirs, @dirs);
+    my $has_labels;
     if ($args{_dirs}) {
         %dirs = %{ $args{_dirs} };
         @dirs = sort { $dirs{$a} cmp $dirs{$b} } keys %dirs;
+        $has_labels++;
     } else {
         @dirs = @{ $args{dirs} };
         %dirs = map { $_ => undef } @dirs;
@@ -161,30 +168,41 @@ sub prove_dirs {
             "directory $dir";
         if ($args{-dry_run}) {
             log_info("[DRY] [%d/%d] Running prove for %s ...",
-                     $i, scalar(@{ $args{dirs} }), $label2;
+                     $i, scalar(@dirs), $label2);
             next DIR;
         }
 
         {
             local $CWD = $dir;
             log_info("[%d/%d] Running prove for %s ...",
-                     $i, scalar(@{ $args{dirs} }), $label2;
+                     $i, scalar(@dirs), $label2);
             my $pres = _prove($args{prove_opts});
             log_debug("Prove result: %s", $pres);
+            my $summarize;
             if ($pres->[0] == 200) {
                 # success
+                $summarize++ if $args{summarize_all};
             } else {
                 log_error "Test for %s failed: %s",
                     $dir, $pres->[1];
-                push @fails, {dir=>$dir, label=>$label1, status=>500, reason=>$pres->[1]};
+                $summarize++;
+                $num_fails++;
+            }
+            if ($summarize) {
+                push @summaries, {
+                    dir=>$dir,
+                    ($has_labels ? (label=>$label1) : ()),
+                    status=>$pres->[0],
+                    reason=>$pres->[1],
+                };
             }
         }
     }
 
     [
-        @{@fails == 0 ? [200, "All succeeded"] : @fails == @{$res} ? [200, "All failed"] : [200, "Some failed"]},
-        \@fails,
-        {'cmdline.exit_code' => @fails ? 1:0},
+        @{$num_fails == 0 ? [200, "All succeeded"] : $num_fails == @dirs ? [200, "All failed"] : [200, "Some failed"]},
+        \@summaries,
+        {'cmdline.exit_code' => $num_fails ? 1:0},
     ];
 }
 
