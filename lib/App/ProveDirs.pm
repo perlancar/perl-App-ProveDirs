@@ -147,7 +147,7 @@ sub prove_dirs {
     my %args = @_;
 
     my @summaries;
-    my $num_fails;
+    my $num_fails = 0;
     my $i = 0;
 
     my (%dirs, @dirs);
