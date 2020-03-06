@@ -68,6 +68,7 @@ our %args_common = (
         'x.name.is_plural' => 1,
         'x.name.singular' => 'prove_opt',
         schema => ['array*', of=>'str*'],
+        default => ['-l'],
     },
     summarize_all => {
         schema => 'bool*',
