@@ -1,3 +1,8 @@
+0.004   2020-03-06  Released-By: PERLANCAR; Urgency: medium
+
+	- [bugfix] Fix undefined warning.
+
+
 0.003   2020-03-06  Released-By: PERLANCAR; Urgency: medium
 
 	- Forgot to set prove_opts' default to the sensible '-l'.
