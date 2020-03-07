@@ -1,3 +1,8 @@
+0.005   2020-03-07  Released-By: PERLANCAR; Urgency: medium
+
+	- [ux] Set CLI's default log level to info (verbose).
+
+
 0.004   2020-03-06  Released-By: PERLANCAR; Urgency: medium
 
 	- [bugfix] Fix undefined warning.
