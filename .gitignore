@@ -2,3 +2,4 @@ App-ProveDirs-*
 .build
 *~
 nytprof*
+.DS_Store
